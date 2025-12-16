@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Đăng nhập</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-box">
+     <h1 class="title">🛋️ Đồ Nội Thất Store</h1>
+      <div class="login-header"><h1>Đăng nhập</h1></div>
+      <div class="login-form">
+        <div class="form-group"><label>Tên đăng nhập</label><input id="username" autocomplete="username" /></div>
+        <div class="form-group"><label>Mật khẩu</label><input id="password" type="password" autocomplete="current-password" /></div>
+        <div style="display:flex;gap:10px;margin-top:12px;">
+          <button id="loginBtn" class="btn">Đăng nhập</button>
+          <button class="btn ghost" onclick="location.href='register.html'">Đăng ký</button>
+        </div>
+        <p style="margin-top:12px;color:var(--muted)">Đăng nhập để quản lý sản phẩm của bạn.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    async function fallbackLocalLogin(username, password){
+      const users = JSON.parse(localStorage.getItem("users") || "[]");
+      const user = users.find(u => u.username === username && u.password === password);
+      return user || null;
+    }
+
+    document.getElementById("loginBtn").addEventListener("click", async () => {
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+      if (!username || !password) return alert("Nhập đầy đủ thông tin!");
+
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ username, password })
+        });
+        if (res.ok) {
+          const user = await res.json();
+          localStorage.setItem("currentUser", JSON.stringify(user));
+          location.href = "index.html";
+          return;
+        }
+      } catch(e){}
+
+      const user = await fallbackLocalLogin(username, password);
+      if (user) {
+        localStorage.setItem("currentUser", JSON.stringify(user));
+        location.href = "index.html";
+      } else {
+        alert("Sai tên đăng nhập hoặc mật khẩu!");
+      }
+    });
+
+    (function checkLogin(){
+      if (localStorage.getItem("currentUser")) {
+        const u = JSON.parse(localStorage.getItem("currentUser"));
+        if (u && u.username) location.href = "index.html";
+      }
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+{
+  "products": [
+    {
+      "id": "1",
+      "name": "Ghế sofa",
+      "price": 2500000
+    },
+    {
+      "id": "2",
+      "name": "Bàn gỗ",
+      "price": 1500000
+    },
+    {
+      "id": "6527",
+      "name": "SOFA CHỈNH ĐIỆN NARCISO",
+      "category": "Phòng khách",
+      "price": 23000000,
+      "image": "https://cdn.hstatic.net/products/200000295856/sofa-chinh-dien-_lusf04_29d23e6162664be9acacbc3c7d672a08.jpg",
+      "desc": "Tình trạng: Còn hàng\nThương hiệu: LUXVIE\nMã SKU: LUSF03\nLoại: SOFA THÔNG MINH\nSOFA CHỈNH ĐIỆN NARCISO\n\n(Vui lòng chọn kích thước và chất liệu bên dưới để xem giá)\n\nMã sản phẩm: LUSF03\n\nKích thước: \n\n- Văng: 2600*1040*930mm\n\nChất liệu có thể chọn sản xuất sp mới: Da công nghiệp/Nỉ/Mirofiber/Carola/Da bò Italia\n\nMàu sắc da đa dạng:\n\n- Da bò thật cao cấp Italia hơn 30 màu\n\n- Da công nghiệp/Nỉ/Mirofiber/Carola cao cấp hơn 100 màu\n\n- Giá thay đổi phụ thuộc vào KÍCH THƯỚC, CHẤT LIỆU như bên dưới.",
+      "creator": "Tú Trinh"
+    }
+  ],
+  "users": [
+    {
+      "id": "1",
+      "username": "admin",
+      "password": "123456"
+    }
+  ]
+}

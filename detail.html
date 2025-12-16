@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title id="pageTitle">Chi tiết sản phẩm</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <a href="index.html" style="color:var(--muted);display:inline-block;margin-bottom:8px;">◀ Quay lại trang chủ</a>
+    <div id="productDetail">
+      <p style="text-align:center;margin-top:40px;">Đang tải chi tiết sản phẩm...</p>
+    </div>
+  </div>
+
+<script>
+function getUserFullname(username) {
+  const users = JSON.parse(localStorage.getItem("users") || "[]");
+  const user = users.find(u => u.username === username);
+  return user ? user.fullname : (username || "Người dùng ẩn danh");
+}
+function formatPrice(price) {
+  if (price === undefined || price === null || price === "") return "(Chưa có giá)";
+  return Number(price).toLocaleString('vi-VN') + " đ";
+}
+function getIdFromUrl(){ return new URLSearchParams(window.location.search).get('id') || ""; }
+
+function renderProduct(product){
+  const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
+  const isCreator = currentUser.username === product.creator;
+  const creatorName = getUserFullname(product.creator);
+
+  const editButton = isCreator ?
+    `<button class="btn" onclick="location.href='add-do.html?id=${product.id}'; event.stopPropagation();">✏️ Chỉnh sửa</button>
+     <button class="btn danger" onclick="confirmDelete('${product.id}'); event.stopPropagation();">🗑️ Xóa</button>` : '';
+
+  document.getElementById('pageTitle').textContent = product.name;
+
+  document.getElementById('productDetail').innerHTML = `
+    <div class="detail-card">
+      <div class="detail-image">
+        <img src="${product.image || 'avatar.jpg'}" alt="${product.name}">
+      </div>
+      <div class="detail-content">
+        <h1>${product.name}</h1>
+        <p class="muted">🏷️ Danh mục: <b>${product.category || '-'}</b></p>
+        <p class="muted italic">Đăng bởi: <b>${creatorName}</b></p>
+
+        <div class="detail-info">
+          <p class="price" style="font-size:1.25rem">Giá: ${formatPrice(product.price)}</p>
+        </div>
+
+        <div class="detail-description">
+          <h2>Mô tả sản phẩm</h2>
+          <p>${product.desc || '<i>(Không có mô tả chi tiết)</i>'}</p>
+        </div>
+
+        <div style="margin-top:18px">
+          ${editButton}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function confirmDelete(id){
+  if (!confirm("Bạn có chắc chắn muốn xóa?")) return;
+  let products = JSON.parse(localStorage.getItem("products") || "[]");
+  products = products.filter(p => String(p.id) !== String(id));
+  localStorage.setItem("products", JSON.stringify(products));
+  alert("Đã xóa sản phẩm.");
+  location.href = "index.html";
+}
+
+function loadProductDetail() {
+  const productId = getIdFromUrl();
+  if (!productId) {
+    document.getElementById('productDetail').innerHTML = '<h1 style="text-align:center;">ID sản phẩm không hợp lệ.</h1>';
+    return;
+  }
+
+  const products = JSON.parse(localStorage.getItem("products") || "[]");
+  const product = products.find(p => String(p.id) === String(productId));
+
+  if (!product) {
+    document.getElementById('productDetail').innerHTML = '<h1 style="text-align:center;margin-top:50px;">Sản phẩm không tồn tại.</h1>';
+    return;
+  }
+
+  renderProduct(product);
+}
+
+loadProductDetail();
+</script>
+</body>
+</html>

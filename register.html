@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Đăng ký</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-box">
+      <div class="login-header"><h1>Đăng ký</h1></div>
+      <div class="login-form">
+        <div class="form-group"><label>Họ và tên *</label><input id="fullname" /></div>
+        <div class="form-group"><label>Tên đăng nhập *</label><input id="username" /></div>
+        <div class="form-group"><label>Mật khẩu *</label><input id="password" type="password" /></div>
+        <div class="form-group"><label>Số điện thoại</label><input id="phone" /></div>
+        <div style="display:flex;gap:10px;margin-top:12px;">
+          <button id="registerBtn" class="btn">Đăng ký</button>
+          <button class="btn ghost" onclick="location.href='login.html'">Trở lại</button>
+        </div>
+        <p style="margin-top:12px;color:var(--muted)">Tạo tài khoản để quản lý sản phẩm của bạn.</p>
+      </div>
+    </div>
+  </div>
+
+<script>
+  async function saveLocalUser(user){
+    let users = JSON.parse(localStorage.getItem("users") || "[]");
+    users.push(user);
+    localStorage.setItem("users", JSON.stringify(users));
+  }
+
+  document.getElementById("registerBtn").addEventListener("click", async () => {
+    const fullname = document.getElementById("fullname").value.trim();
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+
+    if (!fullname || !username || !password) return alert("Vui lòng nhập đầy đủ thông tin bắt buộc.");
+
+    let users = JSON.parse(localStorage.getItem("users") || "[]");
+    if (users.some(u=>u.username===username)) return alert("Username đã tồn tại.");
+
+    const newUser = { username, password, fullname, phone, avatar: "" };
+
+    try {
+      const res = await fetch('/api/register', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify(newUser)
+      });
+      if (res.ok) {
+        const created = await res.json();
+        await saveLocalUser(created);
+        alert("Đăng ký thành công! Hãy đăng nhập.");
+        location.href = "login.html";
+        return;
+      }
+    } catch(e){}
+
+    await saveLocalUser(newUser);
+    alert("Đăng ký thành công (local). Hãy đăng nhập.");
+    location.href = "login.html";
+  });
+</script>
+</body>
+</html>

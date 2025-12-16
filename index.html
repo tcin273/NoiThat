@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>🛋️ Đồ Nội Thất Store</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="navbar">
+    <div class="nav-container">
+      <a class="nav-logo" href="index.html">
+        <div class="logo-mark">🛋️</div>
+        <div class="logo-text">Đồ Nội Thất <span>Store</span></div>
+      </a>
+
+      <nav class="main-nav" aria-label="Chuyên mục">
+        <a href="#" onclick="filterCategory('all');return false;">Tất cả</a>
+        <a href="#" onclick="filterCategory('Phòng khách');return false;">Phòng khách</a>
+        <a href="#" onclick="filterCategory('Phòng ngủ');return false;">Phòng ngủ</a>
+        <a href="#" onclick="filterCategory('Phòng bếp');return false;">Phòng bếp</a>
+        <a href="#" onclick="filterCategory('Văn phòng');return false;">Văn phòng</a>
+        <a href="#" onclick="filterCategory('Trang trí');return false;">Trang trí</a>
+      </nav>
+
+      <div class="nav-user" onclick="toggleDropdown()" tabindex="0" role="button">
+        <img id="avatar" class="user-avatar" src="avatar.jpg" alt="avatar" />
+        <div class="user-meta">
+          <div id="usernameDisplay" class="username"></div>
+          <div class="small-muted">Tài khoản</div>
+        </div>
+        <div id="dropdown" class="dropdown-menu">
+          <a href="add-do.html">➕ Thêm đồ</a>
+          <a href="settings.html">⚙ Cài đặt</a>
+          <a href="#" onclick="logout(); return false;">🚪 Đăng xuất</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="hero">
+    <div>
+      <h1>Trang bán nội thất hiện đại</h1>
+        <p>Chọn lựa nội thất ấm áp, cá tính — phù hợp không gian sinh hoạt & học tập.</p>
+        <p> Nội thất được tuyển chọn kỹ lưỡng, đảm bảo chất lượng và tính thẩm mỹ cao.</p> 
+    </div>
+</div>
+    </section>
+
+    <section style="margin-top: 26px;">
+      <h2>Bộ sưu tập</h2>
+      <p id="count" class="muted"></p>
+      <div id="productList" class="grid-products"></div>
+
+      <div class="pagination">
+        <button class="btn ghost" onclick="prevPage()">◀ Trước</button>
+        <span id="pageInfo" class="page-info"></span>
+        <button class="btn ghost" onclick="nextPage()">Tiếp ▶</button>
+      </div>
+    </section>
+  </main>
+
+<script>
+let products = [];
+let allProducts = [];
+let page = 1;
+const perPage = 6;
+let currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
+
+function formatPrice(p){ if(!p && p !== 0) return "(Chưa có giá)"; return Number(p).toLocaleString('vi-VN') + " đ"; }
+
+function getUserFullname(username){
+  const users = JSON.parse(localStorage.getItem("users") || "[]");
+  const u = users.find(x=>x.username===username);
+  return u ? u.fullname : (username || "Người dùng ẩn danh");
+}
+
+function render(){
+  const start = (page-1)*perPage;
+  const list = products.slice(start, start+perPage);
+
+  document.getElementById("count").textContent = "Tổng số: " + allProducts.length + " sản phẩm";
+
+  document.getElementById("productList").innerHTML = list.map(p => {
+    const isCreator = currentUser && currentUser.username === p.creator;
+    const creatorName = getUserFullname(p.creator);
+    const priceText = p.price ? Number(p.price).toLocaleString('vi-VN') + " đ" : "(Chưa có giá)";
+
+    const actionButtons = isCreator ? `
+      <div class="product-actions">
+        <button class="btn small-btn ghost" onclick="event.stopPropagation(); editProduct('${p.id}');">Sửa</button>
+        <button class="btn small-btn danger" onclick="event.stopPropagation(); deleteProduct('${p.id}');">Xóa</button>
+      </div>` : "";
+
+    return `
+    <article class="product-card" onclick="goDetail('${p.id}')">
+      <div class="card-media">
+        <img src="${p.image || 'avatar.jpg'}" alt="${p.name}">
+      </div>
+      <div class="card-body">
+        <h3>${p.name || '(Không tên)'}</h3>
+        <div class="meta-row">
+          <span class="muted">${p.category || '-'}</span>
+          <span class="price">${priceText}</span>
+        </div>
+        <div class="card-foot">
+          <div class="posted-by">Đăng: <b>${creatorName}</b></div>
+          ${actionButtons}
+        </div>
+      </div>
+    </article>`;
+  }).join("");
+
+  document.getElementById("pageInfo").textContent =
+    "Trang " + page + " / " + Math.max(1, Math.ceil(products.length / perPage));
+}
+
+function goDetail(id){ location.href = "detail.html?id=" + id; }
+function editProduct(id){ location.href = "add-do.html?id=" + id; }
+function nextPage(){ if (page * perPage < products.length) page++; render(); }
+function prevPage(){ if (page > 1) page--; render(); }
+function toggleDropdown(){ document.getElementById("dropdown").classList.toggle("show"); }
+function filterCategory(cat){
+  if (cat === "all") products = [...allProducts];
+  else products = allProducts.filter(p=>p.category === cat);
+  page = 1; render();
+}
+function logout(){ localStorage.removeItem("currentUser"); location.href = "login.html"; }
+
+function deleteProduct(id){
+  if (!confirm("Bạn có chắc chắn muốn xóa sản phẩm này?")) return;
+  let list = JSON.parse(localStorage.getItem("products") || "[]");
+  list = list.filter(p => String(p.id) !== String(id));
+  localStorage.setItem("products", JSON.stringify(list));
+  allProducts = list;
+  products = [...allProducts];
+  render();
+  alert("Đã xóa sản phẩm.");
+}
+
+function loadProducts(){
+  currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
+  document.getElementById("usernameDisplay").textContent = currentUser.fullname || "Khách";
+  document.getElementById("avatar").src = currentUser.avatar || "avatar.jpg";
+
+  allProducts = JSON.parse(localStorage.getItem("products") || "[]");
+  // Ensure IDs are string for comparisons
+  allProducts = allProducts.map(p => ({...p, id: String(p.id)}));
+  products = [...allProducts];
+  page = 1;
+  render();
+}
+
+loadProducts();
+</script>
+</body>
+</html>
+<footer class="footer">
+  <div class="footer-container">
+
+    <div class="footer-col">
+      <h3>Bắt đầu mua sắm</h3>
+      <a href="#">Đăng ký tài khoản</a>
+      <a href="#">Điều khoản bán hàng</a>
+    </div>
+
+    <div class="footer-col">
+      <h3>Tài khoản</h3>
+      <a href="login.html">Đăng nhập</a>
+      <a href="register.html">Tạo tài khoản</a>
+      <a href="#">Danh sách yêu thích</a>
+    </div>
+
+    <div class="footer-col">
+      <h3>Dịch vụ khách hàng</h3>
+      <a href="#">Chính sách giao hàng</a>
+      <a href="#">Phương thức thanh toán</a>
+      <a href="#">Chính sách bảo hành</a>
+      <a href="#">Chính sách đổi trả</a>
+      <a href="#">Câu hỏi thường gặp</a>
+    </div>
+
+    <div class="footer-col">
+      <h3>Liên hệ</h3>
+      <p>📞 0377427739 (Hotline/Zalo)</p>
+      <p>✉️ hotro@noithat.vn</p>
+    </div>
+
+  </div>
+
+  <div class="footer-bottom">
+    © 2025 Nội Thất Store — Thiết kế bởi Thành Công
+  </div>
+</footer>

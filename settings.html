@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>⚙ Cài đặt tài khoản</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <a href="index.html" style="color:var(--muted);display:inline-block;margin-bottom:8px;">◀ Quay lại</a>
+    <h1>⚙ Cài đặt tài khoản</h1>
+
+    <div class="form-card">
+      <div class="form-grid">
+        <label class="full" style="grid-column:1/-1;text-align:center;">
+            <img id="currentAvatar" class="user-avatar" src="avatar.jpg" style="width: 88px; height: 88px; margin-bottom: 8px;">
+        </label>
+
+        <label>Họ và tên
+          <input id="fullname" type="text" placeholder="Họ và tên của bạn">
+        </label>
+
+        <label>Tên đăng nhập (Không thể đổi)
+          <input id="username" type="text" disabled style="background: #fafafa;">
+        </label>
+
+        <label>Ảnh Avatar (URL mới)
+          <input id="avatarUrl" placeholder="Dán link ảnh mới (tùy chọn)">
+        </label>
+
+        <label>Số điện thoại
+          <input id="phone" type="text" placeholder="Số điện thoại của bạn">
+        </label>
+
+        <label>Mật khẩu mới (Bỏ trống nếu không đổi)
+          <input id="newPassword" type="password">
+        </label>
+
+        <label>Xác nhận mật khẩu mới
+          <input id="confirmPassword" type="password">
+        </label>
+
+        <div class="form-actions">
+          <button class="btn ghost" onclick="location.href='index.html'">Hủy</button>
+          <button class="btn" onclick="saveSettings()">Lưu thay đổi</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+let currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
+if (!currentUser.username) { alert("Vui lòng đăng nhập để truy cập trang này."); location.href = "login.html"; }
+
+function loadSettings(){
+  document.getElementById("currentAvatar").src = currentUser.avatar || "avatar.jpg";
+  document.getElementById("fullname").value = currentUser.fullname || "";
+  document.getElementById("username").value = currentUser.username || "";
+  document.getElementById("phone").value = currentUser.phone || "";
+}
+loadSettings();
+
+async function saveSettings(){
+  const newFullname = document.getElementById("fullname").value.trim();
+  const newPhone = document.getElementById("phone").value.trim();
+  const newAvatarUrl = document.getElementById("avatarUrl").value.trim();
+  const newPassword = document.getElementById("newPassword").value.trim();
+  const confirmPassword = document.getElementById("confirmPassword").value.trim();
+
+  if (!newFullname) return alert("Họ và tên không được để trống.");
+  if (newPassword) {
+    if (newPassword.length < 6) return alert("Mật khẩu mới phải có ít nhất 6 ký tự.");
+    if (newPassword !== confirmPassword) return alert("Mật khẩu mới và Xác nhận mật khẩu không khớp.");
+  } else if (confirmPassword) {
+    return alert("Vui lòng nhập Mật khẩu mới để xác nhận.");
+  }
+
+  currentUser.fullname = newFullname;
+  currentUser.phone = newPhone;
+  if (newAvatarUrl) currentUser.avatar = newAvatarUrl;
+  if (newPassword) currentUser.password = newPassword;
+
+  try {
+    const r = await fetch('/api/users/' + encodeURIComponent(currentUser.username), {
+      method: 'PUT',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(currentUser)
+    });
+    if (r.ok) {
+      const updated = await r.json();
+      localStorage.setItem("currentUser", JSON.stringify(updated));
+      let users = JSON.parse(localStorage.getItem("users") || "[]");
+      const idx = users.findIndex(u=>u.username===updated.username);
+      if (idx!==-1) users[idx]=updated; else users.push(updated);
+      localStorage.setItem("users", JSON.stringify(users));
+      alert("Cập nhật thành công (server).");
+      location.reload();
+      return;
+    }
+  } catch(e){}
+
+  let users = JSON.parse(localStorage.getItem("users") || "[]");
+  const index = users.findIndex(u => u.username === currentUser.username);
+  if (index !== -1) {
+    users[index] = currentUser;
+  } else {
+    users.push(currentUser);
+  }
+  localStorage.setItem("users", JSON.stringify(users));
+  localStorage.setItem("currentUser", JSON.stringify(currentUser));
+  alert("Cập nhật thành công (local).");
+  location.reload();
+}
+</script>
+</body>
+</html>
