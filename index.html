@@ -5,214 +5,147 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>🛋️ Đồ Nội Thất Store</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    .grid-products { display:grid; grid-template-columns: repeat(auto-fill,minmax(220px,1fr)); gap:16px; }
+    .product-card { border:1px solid #ddd; border-radius:8px; overflow:hidden; cursor:pointer; }
+    .card-media img { width:100%; height:150px; object-fit:cover; }
+    .card-body { padding:8px; }
+    .price { font-weight:bold; color:#e74c3c; }
+    .product-actions { margin-top:8px; display:flex; gap:4px; }
+    .small-btn { padding:2px 6px; font-size:12px; }
+  </style>
 </head>
 <body>
-  <header class="navbar">
-    <div class="nav-container">
-      <a class="nav-logo" href="index.html">
-        <div class="logo-mark">🛋️</div>
-        <div class="logo-text">Đồ Nội Thất <span>Store</span></div>
-      </a>
-
-      <nav class="main-nav" aria-label="Chuyên mục">
-        <a href="#" onclick="filterCategory('all');return false;">Tất cả</a>
-        <a href="#" onclick="filterCategory('Phòng khách');return false;">Phòng khách</a>
-        <a href="#" onclick="filterCategory('Phòng ngủ');return false;">Phòng ngủ</a>
-        <a href="#" onclick="filterCategory('Phòng bếp');return false;">Phòng bếp</a>
-        <a href="#" onclick="filterCategory('Văn phòng');return false;">Văn phòng</a>
-        <a href="#" onclick="filterCategory('Trang trí');return false;">Trang trí</a>
-      </nav>
-
-      <div class="nav-user" onclick="toggleDropdown()" tabindex="0" role="button">
-        <img id="avatar" class="user-avatar" src="avatar.jpg" alt="avatar" />
-        <div class="user-meta">
-          <div id="usernameDisplay" class="username"></div>
-          <div class="small-muted">Tài khoản</div>
-        </div>
-        <div id="dropdown" class="dropdown-menu">
-          <a href="add-do.html">➕ Thêm đồ</a>
-          <a href="settings.html">⚙ Cài đặt</a>
-          <a href="#" onclick="logout(); return false;">🚪 Đăng xuất</a>
-        </div>
+<header class="navbar">
+  <div class="nav-container">
+    <a class="nav-logo" href="index.html">
+      <div class="logo-mark">🛋️</div>
+      <div class="logo-text">Đồ Nội Thất <span>Store</span></div>
+    </a>
+    <nav class="main-nav" aria-label="Chuyên mục">
+      <a href="#" onclick="filterCategory('all');return false;">Tất cả</a>
+      <a href="#" onclick="filterCategory('Phòng khách');return false;">Phòng khách</a>
+      <a href="#" onclick="filterCategory('Phòng ngủ');return false;">Phòng ngủ</a>
+      <a href="#" onclick="filterCategory('Phòng bếp');return false;">Phòng bếp</a>
+      <a href="#" onclick="filterCategory('Văn phòng');return false;">Văn phòng</a>
+      <a href="#" onclick="filterCategory('Trang trí');return false;">Trang trí</a>
+    </nav>
+    <div class="nav-user" onclick="toggleDropdown()" tabindex="0" role="button">
+      <img id="avatar" class="user-avatar" src="avatar.jpg" alt="avatar" />
+      <div class="user-meta">
+        <div id="usernameDisplay" class="username"></div>
+        <div class="small-muted">Tài khoản</div>
+      </div>
+      <div id="dropdown" class="dropdown-menu">
+        <a href="add-do.html">➕ Thêm đồ</a>
+        <a href="settings.html">⚙ Cài đặt</a>
+        <a href="#" onclick="logout(); return false;">🚪 Đăng xuất</a>
       </div>
     </div>
-  </header>
+  </div>
+</header>
 
-  <main class="container">
-    <div class="hero">
-      <div>
-        <h1>Trang bán nội thất hiện đại</h1>
-        <p>Chọn lựa nội thất ấm áp, cá tính — phù hợp không gian sinh hoạt & học tập.</p>
-        <p>Nội thất được tuyển chọn kỹ lưỡng, đảm bảo chất lượng và tính thẩm mỹ cao.</p> 
-      </div>
+<main class="container">
+  <section style="margin-top: 26px;">
+    <h2>Bộ sưu tập</h2>
+    <p id="count" class="muted"></p>
+    <div id="productList" class="grid-products"></div>
+
+    <div class="pagination">
+      <button class="btn ghost" onclick="prevPage()">◀ Trước</button>
+      <span id="pageInfo" class="page-info"></span>
+      <button class="btn ghost" onclick="nextPage()">Tiếp ▶</button>
     </div>
-
-    <section style="margin-top: 26px;">
-      <h2>Bộ sưu tập</h2>
-      <p id="count" class="muted"></p>
-      <div id="productList" class="grid-products"></div>
-
-      <div class="pagination">
-        <button class="btn ghost" onclick="prevPage()">◀ Trước</button>
-        <span id="pageInfo" class="page-info"></span>
-        <button class="btn ghost" onclick="nextPage()">Tiếp ▶</button>
-      </div>
-    </section>
-  </main>
+  </section>
+</main>
 
 <script>
 let products = [];
 let allProducts = [];
 let page = 1;
 const perPage = 6;
-let currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
 
-function formatPrice(p){ if(!p && p !== 0) return "(Chưa có giá)"; return Number(p).toLocaleString('vi-VN') + " đ"; }
+// 20 sản phẩm mẫu với ID cố định
+const sampleProducts = [
+  {id:"p1", name:"SOFA GIƯỜNG CEASAR", category:"Phòng khách", price:16300000, image:"https://cdn.hshttps://cdn.hstatic.net/products/200000295856/sofa-bed-_lusf08_4b07bb16b42840768b6dd60dae86dc9a.jpgtatic.net/products/200000295856/sofa-bed-_lusf09_3__8a76254ea7bd47cdb1ef460050c2a1cb.jpg", desc:"Sofa giường đa năng, màu xám sang trọng."},
+  {id:"p2", name:"Bàn trà gỗ", category:"Phòng khách", price:1200000, creator:"admin", image:"https://cdn.hstatic.net/products/ban-tra.jpg", desc:"Bàn trà gỗ nhỏ gọn."},
+  {id:"p3", name:"Tủ kệ TV", category:"Phòng khách", price:3500000, creator:"admin", image:"https://cdn.hstatic.net/products/tu-tv.jpg", desc:"Tủ kệ TV hiện đại."},
+  {id:"p4", name:"Giường ngủ gỗ", category:"Phòng ngủ", price:7000000, creator:"admin", image:"https://cdn.hstatic.net/products/giuong-ngu.jpg", desc:"Giường ngủ gỗ chắc chắn."},
+  {id:"p5", name:"Tủ quần áo", category:"Phòng ngủ", price:4000000, creator:"admin", image:"https://cdn.hstatic.net/products/tu-quan-ao.jpg", desc:"Tủ quần áo tiện lợi."},
+  {id:"p6", name:"Bàn học sinh", category:"Phòng ngủ", price:1200000, creator:"admin", image:"https://cdn.hstatic.net/products/ban-hoc.jpg", desc:"Bàn học sinh gọn nhẹ."},
+  {id:"p7", name:"Bàn ăn tròn", category:"Phòng bếp", price:3000000, creator:"admin", image:"https://cdn.hstatic.net/products/ban-an.jpg", desc:"Bàn ăn tròn 4 ghế."},
+  {id:"p8", name:"Ghế ăn", category:"Phòng bếp", price:800000, creator:"admin", image:"https://cdn.hstatic.net/products/ghe-an.jpg", desc:"Ghế ăn thoải mái."},
+  {id:"p9", name:"Tủ lạnh mini", category:"Phòng bếp", price:2500000, creator:"admin", image:"https://cdn.hstatic.net/products/tu-lanh.jpg", desc:"Tủ lạnh mini tiết kiệm điện."},
+  {id:"p10", name:"Bàn làm việc", category:"Văn phòng", price:2000000, creator:"admin", image:"https://cdn.hstatic.net/products/ban-lam-viec.jpg", desc:"Bàn làm việc văn phòng."},
+  {id:"p11", name:"Ghế văn phòng", category:"Văn phòng", price:1500000, creator:"admin", image:"https://cdn.hstatic.net/products/ghe-van-phong.jpg", desc:"Ghế xoay êm ái."},
+  {id:"p12", name:"Kệ sách", category:"Văn phòng", price:1800000, creator:"admin", image:"https://cdn.hstatic.net/products/ke-sach.jpg", desc:"Kệ sách 3 tầng."},
+  {id:"p13", name:"Tranh treo tường", category:"Trang trí", price:600000, creator:"admin", image:"https://cdn.hstatic.net/products/tranh-treo.jpg", desc:"Tranh canvas phong cách hiện đại."},
+  {id:"p14", name:"Đèn bàn", category:"Trang trí", price:400000, creator:"admin", image:"https://cdn.hstatic.net/products/den-ban.jpg", desc:"Đèn bàn ánh sáng vàng."},
+  {id:"p15", name:"Thảm trải sàn", category:"Trang trí", price:900000, creator:"admin", image:"https://cdn.hstatic.net/products/tham.jpg", desc:"Thảm trải sàn êm ái."},
+  {id:"p16", name:"Ghế bành thư giãn", category:"Phòng khách", price:4500000, creator:"admin", image:"https://cdn.hstatic.net/products/ghe-banh.jpg", desc:"Ghế bành thoải mái."},
+  {id:"p17", name:"Bàn console", category:"Phòng khách", price:2200000, creator:"admin", image:"https://cdn.hstatic.net/products/ban-console.jpg", desc:"Bàn console trang trí."},
+  {id:"p18", name:"Giường tầng trẻ em", category:"Phòng ngủ", price:6500000, creator:"admin", image:"https://cdn.hstatic.net/products/giuong-tang.jpg", desc:"Giường tầng cho bé."},
+  {id:"p19", name:"Ghế bar", category:"Phòng bếp", price:900000, creator:"admin", image:"https://cdn.hstatic.net/products/ghe-bar.jpg", desc:"Ghế bar cao cấp."},
+  {id:"p20", name:"Đèn trần hiện đại", category:"Trang trí", price:1200000, creator:"admin", image:"https://cdn.hstatic.net/products/den-tran.jpg", desc:"Đèn trần phong cách hiện đại."}
+];
 
-function getUserFullname(username){
-  const users = JSON.parse(localStorage.getItem("users") || "[]");
-  const u = users.find(x=>x.username===username);
-  return u ? u.fullname : (username || "Người dùng ẩn danh");
+// Lưu sampleProducts vào localStorage nếu chưa có
+if(!localStorage.getItem("products")){
+  localStorage.setItem("products", JSON.stringify(sampleProducts));
 }
 
-function render(){
+// Load products từ localStorage
+let currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
+allProducts = JSON.parse(localStorage.getItem("products") || "[]");
+products = [...allProducts];
+
+// Hiển thị
+function render() {
   const start = (page-1)*perPage;
   const list = products.slice(start, start+perPage);
-
   document.getElementById("count").textContent = "Tổng số: " + allProducts.length + " sản phẩm";
-
-  document.getElementById("productList").innerHTML = list.map(p => {
-    const isCreator = currentUser && currentUser.username === p.creator;
-    const creatorName = getUserFullname(p.creator);
-    const priceText = p.price ? Number(p.price).toLocaleString('vi-VN') + " đ" : "(Chưa có giá)";
-
+  document.getElementById("productList").innerHTML = list.map(p=>{
+    const isCreator = currentUser.username === p.creator;
+    const priceText = p.price ? Number(p.price).toLocaleString('vi-VN')+" đ" : "(Chưa có giá)";
     const actionButtons = isCreator ? `
       <div class="product-actions">
-        <button class="btn small-btn ghost" onclick="event.stopPropagation(); editProduct('${p.id}');">Sửa</button>
-        <button class="btn small-btn danger" onclick="event.stopPropagation(); deleteProduct('${p.id}');">Xóa</button>
+        <button class="btn small-btn ghost" onclick="event.stopPropagation(); editProduct('${p.id}')">Sửa</button>
+        <button class="btn small-btn danger" onclick="event.stopPropagation(); deleteProduct('${p.id}')">Xóa</button>
       </div>` : "";
-
-    return `
-    <article class="product-card" onclick="goDetail('${p.id}')">
-      <div class="card-media">
-        <img src="${p.image || 'avatar.jpg'}" alt="${p.name}">
-      </div>
+    return `<div class="product-card" onclick="goDetail('${p.id}')">
+      <div class="card-media"><img src="${p.image}" alt="${p.name}"></div>
       <div class="card-body">
-        <h3>${p.name || '(Không tên)'}</h3>
-        <div class="meta-row">
-          <span class="muted">${p.category || '-'}</span>
-          <span class="price">${priceText}</span>
-        </div>
-        <div class="card-foot">
-          <div class="posted-by">Đăng: <b>${creatorName}</b></div>
-          ${actionButtons}
-        </div>
+        <h3>${p.name}</h3>
+        <div class="meta-row"><span class="muted">${p.category}</span> <span class="price">${priceText}</span></div>
+        <div class="card-foot"><div class="posted-by">Đăng: <b>${p.creator}</b></div>${actionButtons}</div>
       </div>
-    </article>`;
+    </div>`;
   }).join("");
-
-  document.getElementById("pageInfo").textContent =
-    "Trang " + page + " / " + Math.max(1, Math.ceil(products.length / perPage));
+  document.getElementById("pageInfo").textContent = `Trang ${page} / ${Math.max(1, Math.ceil(products.length/perPage))}`;
 }
 
-function goDetail(id){ location.href = "detail.html?id=" + id; }
-function editProduct(id){ location.href = "add-do.html?id=" + id; }
-function nextPage(){ if (page * perPage < products.length) page++; render(); }
-function prevPage(){ if (page > 1) page--; render(); }
-function toggleDropdown(){ document.getElementById("dropdown").classList.toggle("show"); }
-function filterCategory(cat){
-  if (cat === "all") products = [...allProducts];
-  else products = allProducts.filter(p=>p.category === cat);
-  page = 1; render();
-}
-function logout(){ localStorage.removeItem("currentUser"); location.href = "login.html"; }
-
+function goDetail(id){ alert("Chi tiết sản phẩm: "+id); }
+function editProduct(id){ location.href="add-do.html?id="+id; }
 function deleteProduct(id){
-  if (!confirm("Bạn có chắc chắn muốn xóa sản phẩm này?")) return;
-  let list = JSON.parse(localStorage.getItem("products") || "[]");
-  list = list.filter(p => String(p.id) !== String(id));
-  localStorage.setItem("products", JSON.stringify(list));
-  allProducts = list;
-  products = [...allProducts];
-  render();
-  alert("Đã xóa sản phẩm.");
-}
-
-function loadProducts(){
-  currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
-  document.getElementById("usernameDisplay").textContent = currentUser.fullname || "Khách";
-  document.getElementById("avatar").src = currentUser.avatar || "avatar.jpg";
-
-  allProducts = JSON.parse(localStorage.getItem("products") || "[]");
-
-  // Nếu chưa có sản phẩm, thêm 20 sản phẩm mẫu
-  if(allProducts.length === 0){
-    const sampleProducts = [
-      { id: String(Date.now()+1), name: "Ghế sofa da", category: "Phòng khách", price: 5000000, creator: "admin", image: "sofa1.jpg" },
-      { id: String(Date.now()+2), name: "Bàn trà gỗ", category: "Phòng khách", price: 1200000, creator: "admin", image: "ban-tra.jpg" },
-      { id: String(Date.now()+3), name: "Tủ kệ TV", category: "Phòng khách", price: 3500000, creator: "admin", image: "tu-tv.jpg" },
-      { id: String(Date.now()+4), name: "Giường ngủ gỗ", category: "Phòng ngủ", price: 7000000, creator: "admin", image: "giuong-ngu.jpg" },
-      { id: String(Date.now()+5), name: "Tủ quần áo", category: "Phòng ngủ", price: 4000000, creator: "admin", image: "tu-quan-ao.jpg" },
-      { id: String(Date.now()+6), name: "Bàn học sinh", category: "Phòng ngủ", price: 1200000, creator: "admin", image: "ban-hoc.jpg" },
-      { id: String(Date.now()+7), name: "Bàn ăn tròn", category: "Phòng bếp", price: 3000000, creator: "admin", image: "ban-an.jpg" },
-      { id: String(Date.now()+8), name: "Ghế ăn", category: "Phòng bếp", price: 800000, creator: "admin", image: "ghe-an.jpg" },
-      { id: String(Date.now()+9), name: "Tủ lạnh mini", category: "Phòng bếp", price: 2500000, creator: "admin", image: "tu-lanh.jpg" },
-      { id: String(Date.now()+10), name: "Bàn làm việc", category: "Văn phòng", price: 2000000, creator: "admin", image: "ban-lam-viec.jpg" },
-      { id: String(Date.now()+11), name: "Ghế văn phòng", category: "Văn phòng", price: 1500000, creator: "admin", image: "ghe-van-phong.jpg" },
-      { id: String(Date.now()+12), name: "Kệ sách", category: "Văn phòng", price: 1800000, creator: "admin", image: "ke-sach.jpg" },
-      { id: String(Date.now()+13), name: "Tranh treo tường", category: "Trang trí", price: 600000, creator: "admin", image: "tranh-treo.jpg" },
-      { id: String(Date.now()+14), name: "Đèn bàn", category: "Trang trí", price: 400000, creator: "admin", image: "den-ban.jpg" },
-      { id: String(Date.now()+15), name: "Thảm trải sàn", category: "Trang trí", price: 900000, creator: "admin", image: "tham.jpg" },
-      { id: String(Date.now()+16), name: "Ghế bành thư giãn", category: "Phòng khách", price: 4500000, creator: "admin", image: "ghe-banh.jpg" },
-      { id: String(Date.now()+17), name: "Bàn console", category: "Phòng khách", price: 2200000, creator: "admin", image: "ban-console.jpg" },
-      { id: String(Date.now()+18), name: "Giường tầng trẻ em", category: "Phòng ngủ", price: 6500000, creator: "admin", image: "giuong-tang.jpg" },
-      { id: String(Date.now()+19), name: "Ghế bar", category: "Phòng bếp", price: 900000, creator: "admin", image: "ghe-bar.jpg" },
-      { id: String(Date.now()+20), name: "Đèn trần hiện đại", category: "Trang trí", price: 1200000, creator: "admin", image: "den-tran.jpg" },
-    ];
-    localStorage.setItem("products", JSON.stringify(sampleProducts));
-    allProducts = [...sampleProducts];
-    alert("Đã thêm 20 sản phẩm mẫu!");
-  }
-
-  allProducts = allProducts.map(p => ({...p, id: String(p.id)}));
-  products = [...allProducts];
-  page = 1;
+  if(!confirm("Bạn có chắc chắn muốn xóa sản phẩm này?")) return;
+  products = products.filter(p=>p.id!==id);
+  allProducts = products;
+  localStorage.setItem("products", JSON.stringify(allProducts));
   render();
 }
+function nextPage(){ if(page*perPage<products.length) page++; render(); }
+function prevPage(){ if(page>1) page--; render(); }
+function toggleDropdown(){ document.getElementById("dropdown").classList.toggle("show"); }
+function logout(){ localStorage.removeItem("currentUser"); location.href="login.html"; }
+function filterCategory(cat){
+  if(cat==="all") products=[...allProducts];
+  else products = allProducts.filter(p=>p.category===cat);
+  page=1; render();
+}
 
-loadProducts();
+document.getElementById("usernameDisplay").textContent = currentUser.fullname||"Khách";
+document.getElementById("avatar").src = currentUser.avatar||"avatar.jpg";
+render();
 </script>
-
-<footer class="footer">
-  <div class="footer-container">
-    <div class="footer-col">
-      <h3>Bắt đầu mua sắm</h3>
-      <a href="#">Đăng ký tài khoản</a>
-      <a href="#">Điều khoản bán hàng</a>
-    </div>
-    <div class="footer-col">
-      <h3>Tài khoản</h3>
-      <a href="login.html">Đăng nhập</a>
-      <a href="register.html">Tạo tài khoản</a>
-      <a href="#">Danh sách yêu thích</a>
-    </div>
-    <div class="footer-col">
-      <h3>Dịch vụ khách hàng</h3>
-      <a href="#">Chính sách giao hàng</a>
-      <a href="#">Phương thức thanh toán</a>
-      <a href="#">Chính sách bảo hành</a>
-      <a href="#">Chính sách đổi trả</a>
-      <a href="#">Câu hỏi thường gặp</a>
-    </div>
-    <div class="footer-col">
-      <h3>Liên hệ</h3>
-      <p>📞 0377427739 (Hotline/Zalo)</p>
-      <p>✉️ hotro@noithat.vn</p>
-    </div>
-  </div>
-  <div class="footer-bottom">
-    © 2025 Nội Thất Store — Thiết kế bởi Thành Công
-  </div>
-</footer>
 </body>
 </html>
