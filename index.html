@@ -40,13 +40,12 @@
 
   <main class="container">
     <div class="hero">
-    <div>
-      <h1>Trang bán nội thất hiện đại</h1>
+      <div>
+        <h1>Trang bán nội thất hiện đại</h1>
         <p>Chọn lựa nội thất ấm áp, cá tính — phù hợp không gian sinh hoạt & học tập.</p>
-        <p> Nội thất được tuyển chọn kỹ lưỡng, đảm bảo chất lượng và tính thẩm mỹ cao.</p> 
+        <p>Nội thất được tuyển chọn kỹ lưỡng, đảm bảo chất lượng và tính thẩm mỹ cao.</p> 
+      </div>
     </div>
-</div>
-    </section>
 
     <section style="margin-top: 26px;">
       <h2>Bộ sưu tập</h2>
@@ -145,7 +144,36 @@ function loadProducts(){
   document.getElementById("avatar").src = currentUser.avatar || "avatar.jpg";
 
   allProducts = JSON.parse(localStorage.getItem("products") || "[]");
-  // Ensure IDs are string for comparisons
+
+  // Nếu chưa có sản phẩm, thêm 20 sản phẩm mẫu
+  if(allProducts.length === 0){
+    const sampleProducts = [
+      { id: String(Date.now()+1), name: "Ghế sofa da", category: "Phòng khách", price: 5000000, creator: "admin", image: "sofa1.jpg" },
+      { id: String(Date.now()+2), name: "Bàn trà gỗ", category: "Phòng khách", price: 1200000, creator: "admin", image: "ban-tra.jpg" },
+      { id: String(Date.now()+3), name: "Tủ kệ TV", category: "Phòng khách", price: 3500000, creator: "admin", image: "tu-tv.jpg" },
+      { id: String(Date.now()+4), name: "Giường ngủ gỗ", category: "Phòng ngủ", price: 7000000, creator: "admin", image: "giuong-ngu.jpg" },
+      { id: String(Date.now()+5), name: "Tủ quần áo", category: "Phòng ngủ", price: 4000000, creator: "admin", image: "tu-quan-ao.jpg" },
+      { id: String(Date.now()+6), name: "Bàn học sinh", category: "Phòng ngủ", price: 1200000, creator: "admin", image: "ban-hoc.jpg" },
+      { id: String(Date.now()+7), name: "Bàn ăn tròn", category: "Phòng bếp", price: 3000000, creator: "admin", image: "ban-an.jpg" },
+      { id: String(Date.now()+8), name: "Ghế ăn", category: "Phòng bếp", price: 800000, creator: "admin", image: "ghe-an.jpg" },
+      { id: String(Date.now()+9), name: "Tủ lạnh mini", category: "Phòng bếp", price: 2500000, creator: "admin", image: "tu-lanh.jpg" },
+      { id: String(Date.now()+10), name: "Bàn làm việc", category: "Văn phòng", price: 2000000, creator: "admin", image: "ban-lam-viec.jpg" },
+      { id: String(Date.now()+11), name: "Ghế văn phòng", category: "Văn phòng", price: 1500000, creator: "admin", image: "ghe-van-phong.jpg" },
+      { id: String(Date.now()+12), name: "Kệ sách", category: "Văn phòng", price: 1800000, creator: "admin", image: "ke-sach.jpg" },
+      { id: String(Date.now()+13), name: "Tranh treo tường", category: "Trang trí", price: 600000, creator: "admin", image: "tranh-treo.jpg" },
+      { id: String(Date.now()+14), name: "Đèn bàn", category: "Trang trí", price: 400000, creator: "admin", image: "den-ban.jpg" },
+      { id: String(Date.now()+15), name: "Thảm trải sàn", category: "Trang trí", price: 900000, creator: "admin", image: "tham.jpg" },
+      { id: String(Date.now()+16), name: "Ghế bành thư giãn", category: "Phòng khách", price: 4500000, creator: "admin", image: "ghe-banh.jpg" },
+      { id: String(Date.now()+17), name: "Bàn console", category: "Phòng khách", price: 2200000, creator: "admin", image: "ban-console.jpg" },
+      { id: String(Date.now()+18), name: "Giường tầng trẻ em", category: "Phòng ngủ", price: 6500000, creator: "admin", image: "giuong-tang.jpg" },
+      { id: String(Date.now()+19), name: "Ghế bar", category: "Phòng bếp", price: 900000, creator: "admin", image: "ghe-bar.jpg" },
+      { id: String(Date.now()+20), name: "Đèn trần hiện đại", category: "Trang trí", price: 1200000, creator: "admin", image: "den-tran.jpg" },
+    ];
+    localStorage.setItem("products", JSON.stringify(sampleProducts));
+    allProducts = [...sampleProducts];
+    alert("Đã thêm 20 sản phẩm mẫu!");
+  }
+
   allProducts = allProducts.map(p => ({...p, id: String(p.id)}));
   products = [...allProducts];
   page = 1;
@@ -154,24 +182,20 @@ function loadProducts(){
 
 loadProducts();
 </script>
-</body>
-</html>
+
 <footer class="footer">
   <div class="footer-container">
-
     <div class="footer-col">
       <h3>Bắt đầu mua sắm</h3>
       <a href="#">Đăng ký tài khoản</a>
       <a href="#">Điều khoản bán hàng</a>
     </div>
-
     <div class="footer-col">
       <h3>Tài khoản</h3>
       <a href="login.html">Đăng nhập</a>
       <a href="register.html">Tạo tài khoản</a>
       <a href="#">Danh sách yêu thích</a>
     </div>
-
     <div class="footer-col">
       <h3>Dịch vụ khách hàng</h3>
       <a href="#">Chính sách giao hàng</a>
@@ -180,16 +204,15 @@ loadProducts();
       <a href="#">Chính sách đổi trả</a>
       <a href="#">Câu hỏi thường gặp</a>
     </div>
-
     <div class="footer-col">
       <h3>Liên hệ</h3>
       <p>📞 0377427739 (Hotline/Zalo)</p>
       <p>✉️ hotro@noithat.vn</p>
     </div>
-
   </div>
-
   <div class="footer-bottom">
     © 2025 Nội Thất Store — Thiết kế bởi Thành Công
   </div>
 </footer>
+</body>
+</html>
