@@ -4,90 +4,58 @@
   <meta charset="UTF-8">
   <title>➕ Thêm / Chỉnh sửa sản phẩm</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <!-- CSS -->
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
 <div class="container">
-
-  <!-- Back -->
   <a href="index.html" class="back-link">◀ Quay lại</a>
-
-  <h1 style="margin-bottom: 16px;">➕ Thêm / Chỉnh sửa sản phẩm</h1>
+  <h1>➕ Thêm / Chỉnh sửa sản phẩm</h1>
 
   <div class="form-card">
-    <div class="form-grid">
+    <label>Tên sản phẩm
+      <input id="name" type="text" placeholder="Ví dụ: Ghế sofa 2 chỗ">
+    </label>
 
-      <!-- Tên -->
-      <label>
-        Tên sản phẩm
-        <input id="name" type="text" placeholder="Ví dụ: Ghế sofa 2 chỗ">
-      </label>
+    <label>Danh mục
+      <select id="category">
+        <option value="Phòng khách">Phòng khách</option>
+        <option value="Phòng ngủ">Phòng ngủ</option>
+        <option value="Phòng bếp">Phòng bếp</option>
+        <option value="Phòng tắm">Phòng tắm</option>
+        <option value="Văn phòng">Văn phòng</option>
+        <option value="Trang trí">Trang trí</option>
+      </select>
+    </label>
 
-      <!-- Danh mục -->
-      <label>
-        Danh mục
-        <select id="category">
-          <option value="Phòng khách">Phòng khách</option>
-          <option value="Phòng ngủ">Phòng ngủ</option>
-          <option value="Phòng bếp">Phòng bếp</option>
-          <option value="Phòng tắm">Phòng tắm</option>
-          <option value="Văn phòng">Văn phòng</option>
-          <option value="Trang trí">Trang trí</option>
-        </select>
-      </label>
+    <label>Giá (VNĐ)
+      <input id="price" type="number" placeholder="Ví dụ: 2500000">
+    </label>
 
-      <!-- Giá -->
-      <label>
-        Giá (VNĐ)
-        <input id="price" type="number" placeholder="Ví dụ: 2500000">
-      </label>
+    <label>Link hình ảnh
+      <input id="image" type="text" placeholder="URL hình ảnh">
+    </label>
 
-      <!-- Link ảnh -->
-      <label>
-        Link hình ảnh
-        <input id="image" type="text" placeholder="Dán URL hình ảnh (hoặc để trống)">
-      </label>
+    <label>Mô tả
+      <textarea id="desc" rows="6" placeholder="Mô tả chi tiết sản phẩm..."></textarea>
+    </label>
 
-      <!-- Mô tả -->
-      <label class="full">
-        Mô tả
-        <textarea id="desc" rows="6" placeholder="Mô tả chi tiết sản phẩm..."></textarea>
-      </label>
-
-      <!-- Buttons -->
-      <div class="form-actions full" style="display:flex; justify-content:flex-end; gap:12px;">
-        <button class="btn ghost" onclick="location.href='index.html'">Hủy</button>
-        <button class="btn" onclick="saveProduct()">Lưu sản phẩm</button>
-      </div>
-
+    <div class="form-actions" style="margin-top:10px;">
+      <button class="btn ghost" onclick="location.href='index.html'">Hủy</button>
+      <button class="btn" onclick="saveProduct()">Lưu sản phẩm</button>
     </div>
   </div>
-
 </div>
 
 <script>
-/* =====================================
-   Load dữ liệu khi sửa
-===================================== */
-
 const id = new URLSearchParams(location.search).get("id");
 let products = JSON.parse(localStorage.getItem("products") || "[]");
 let currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
+if(!currentUser.username){ alert("Bạn phải đăng nhập!"); location.href="login.html"; }
 
-if (!currentUser.username) {
-  alert("Bạn phải đăng nhập!");
-  location.href = "login.html";
-}
-
-// If editing
-function loadEdit() {
-  if (!id) return;
-  const p = products.find(x => String(x.id) === String(id));
-  if (!p) return;
-
+function loadEdit(){
+  if(!id) return;
+  const p = products.find(x=>x.id===id);
+  if(!p) return;
   document.getElementById("name").value = p.name;
   document.getElementById("category").value = p.category;
   document.getElementById("price").value = p.price;
@@ -96,51 +64,25 @@ function loadEdit() {
 }
 loadEdit();
 
-
-/* =====================================
-   Save Product
-===================================== */
-
-function saveProduct() {
+function saveProduct(){
   const name = document.getElementById("name").value.trim();
   const category = document.getElementById("category").value;
   const price = document.getElementById("price").value.trim();
   const image = document.getElementById("image").value.trim();
   const desc = document.getElementById("desc").value.trim();
+  if(!name) return alert("Tên sản phẩm không được để trống!");
 
-  if (!name) return alert("Tên sản phẩm không được để trống!");
-
-  if (id) {
-    const index = products.findIndex(p => String(p.id) === String(id));
-
-    products[index] = {
-      ...products[index],
-      name,
-      category,
-      price,
-      image,
-      desc
-    };
-
+  if(id){
+    const index = products.findIndex(p=>p.id===id);
+    products[index] = {...products[index], name, category, price, image, desc};
   } else {
-    const newProduct = {
-      id: Date.now(),
-      name,
-      category,
-      price,
-      image,
-      desc,
-      creator: currentUser.username
-    };
+    const newProduct = {id:"p"+(products.length+1), name, category, price, image, desc, creator:currentUser.username};
     products.push(newProduct);
   }
-
   localStorage.setItem("products", JSON.stringify(products));
   alert("Lưu thành công!");
-  location.href = "index.html";
+  location.href="index.html";
 }
-
 </script>
-
 </body>
 </html>
