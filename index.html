@@ -7,212 +7,208 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <header class="navbar">
-    <div class="nav-container">
-      <a class="nav-logo" href="index.html">
-        <div class="logo-mark">🛋️</div>
-        <div class="logo-text">Đồ Nội Thất <span>Store</span></div>
-      </a>
 
-      <nav class="main-nav" aria-label="Chuyên mục">
-        <a href="#" onclick="filterCategory('all');return false;">Tất cả</a>
-        <a href="#" onclick="filterCategory('Phòng khách');return false;">Phòng khách</a>
-        <a href="#" onclick="filterCategory('Phòng ngủ');return false;">Phòng ngủ</a>
-        <a href="#" onclick="filterCategory('Phòng bếp');return false;">Phòng bếp</a>
-        <a href="#" onclick="filterCategory('Văn phòng');return false;">Văn phòng</a>
-        <a href="#" onclick="filterCategory('Trang trí');return false;">Trang trí</a>
-      </nav>
+<header class="navbar">
+  <div class="nav-container">
+    <a class="nav-logo" href="index.html">
+      <div class="logo-mark">🛋️</div>
+      <div class="logo-text">Đồ Nội Thất <span>Store</span></div>
+    </a>
 
-      <div class="nav-user" onclick="toggleDropdown()" tabindex="0" role="button">
-        <img id="avatar" class="user-avatar" src="avatar.jpg" alt="avatar" />
-        <div class="user-meta">
-          <div id="usernameDisplay" class="username"></div>
-          <div class="small-muted">Tài khoản</div>
-        </div>
-        <div id="dropdown" class="dropdown-menu">
-          <a href="add-do.html">➕ Thêm đồ</a>
-          <a href="settings.html">⚙ Cài đặt</a>
-          <a href="#" onclick="logout(); return false;">🚪 Đăng xuất</a>
-        </div>
+    <nav class="main-nav">
+      <a href="#" onclick="filterCategory('all');return false;">Tất cả</a>
+      <a href="#" onclick="filterCategory('Phòng khách');return false;">Phòng khách</a>
+      <a href="#" onclick="filterCategory('Phòng ngủ');return false;">Phòng ngủ</a>
+      <a href="#" onclick="filterCategory('Phòng bếp');return false;">Phòng bếp</a>
+      <a href="#" onclick="filterCategory('Văn phòng');return false;">Văn phòng</a>
+      <a href="#" onclick="filterCategory('Trang trí');return false;">Trang trí</a>
+    </nav>
+
+    <div class="nav-user" onclick="toggleDropdown()">
+      <img id="avatar" class="user-avatar" src="avatar.jpg" />
+      <div class="user-meta">
+        <div id="usernameDisplay" class="username">Khách</div>
+        <div class="small-muted">Tài khoản</div>
+      </div>
+      <div id="dropdown" class="dropdown-menu">
+        <a href="login.html">🔑 Đăng nhập</a>
+        <a href="register.html">📝 Tạo tài khoản</a>
+        <a href="add-do.html">➕ Thêm đồ</a>
+        <a href="#" onclick="logout();return false;">🚪 Đăng xuất</a>
       </div>
     </div>
-  </header>
+  </div>
+</header>
 
-  <main class="container">
-    <div class="hero">
-      <div>
-        <h1>Trang bán nội thất hiện đại</h1>
-        <p>Chọn lựa nội thất ấm áp, cá tính — phù hợp không gian sinh hoạt & học tập.</p>
-        <p>Nội thất được tuyển chọn kỹ lưỡng, đảm bảo chất lượng và tính thẩm mỹ cao.</p> 
-      </div>
+<main class="container">
+  <div class="hero">
+    <h1>Thiết kế nên không gian sống</h1>
+    <p>Nhà là nơi để trở về là nơi bắt đầu và kết thúc một ngày trọn vẹn</p>
+  </div>
+
+  <section>
+    <h2>Bộ sưu tập</h2>
+    <p id="count" class="muted"></p>
+    <div id="productList" class="grid-products"></div>
+
+    <div class="pagination">
+      <button onclick="prevPage()">◀ Trước</button>
+      <span id="pageInfo"></span>
+      <button onclick="nextPage()">Tiếp ▶</button>
     </div>
+  </section>
+</main>
 
-    <section style="margin-top: 26px;">
-      <h2>Bộ sưu tập</h2>
-      <p id="count" class="muted"></p>
-      <div id="productList" class="grid-products"></div>
-
-      <div class="pagination">
-        <button class="btn ghost" onclick="prevPage()">◀ Trước</button>
-        <span id="pageInfo" class="page-info"></span>
-        <button class="btn ghost" onclick="nextPage()">Tiếp ▶</button>
-      </div>
-    </section>
-  </main>
-
-<script>
-let products = [];
-let allProducts = [];
-let page = 1;
-const perPage = 6;
-let currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
-
-function formatPrice(p){ if(!p && p !== 0) return "(Chưa có giá)"; return Number(p).toLocaleString('vi-VN') + " đ"; }
-
-function getUserFullname(username){
-  const users = JSON.parse(localStorage.getItem("users") || "[]");
-  const u = users.find(x=>x.username===username);
-  return u ? u.fullname : (username || "Người dùng ẩn danh");
-}
-
-function render(){
-  const start = (page-1)*perPage;
-  const list = products.slice(start, start+perPage);
-
-  document.getElementById("count").textContent = "Tổng số: " + allProducts.length + " sản phẩm";
-
-  document.getElementById("productList").innerHTML = list.map(p => {
-    const isCreator = currentUser && currentUser.username === p.creator;
-    const creatorName = getUserFullname(p.creator);
-    const priceText = p.price ? Number(p.price).toLocaleString('vi-VN') + " đ" : "(Chưa có giá)";
-
-    const actionButtons = isCreator ? `
-      <div class="product-actions">
-        <button class="btn small-btn ghost" onclick="event.stopPropagation(); editProduct('${p.id}');">Sửa</button>
-        <button class="btn small-btn danger" onclick="event.stopPropagation(); deleteProduct('${p.id}');">Xóa</button>
-      </div>` : "";
-
-    return `
-    <article class="product-card" onclick="goDetail('${p.id}')">
-      <div class="card-media">
-        <img src="${p.image || 'avatar.jpg'}" alt="${p.name}">
-      </div>
-      <div class="card-body">
-        <h3>${p.name || '(Không tên)'}</h3>
-        <div class="meta-row">
-          <span class="muted">${p.category || '-'}</span>
-          <span class="price">${priceText}</span>
-        </div>
-        <div class="card-foot">
-          <div class="posted-by">Đăng: <b>${creatorName}</b></div>
-          ${actionButtons}
-        </div>
-      </div>
-    </article>`;
-  }).join("");
-
-  document.getElementById("pageInfo").textContent =
-    "Trang " + page + " / " + Math.max(1, Math.ceil(products.length / perPage));
-}
-
-function goDetail(id){ location.href = "detail.html?id=" + id; }
-function editProduct(id){ location.href = "add-do.html?id=" + id; }
-function nextPage(){ if (page * perPage < products.length) page++; render(); }
-function prevPage(){ if (page > 1) page--; render(); }
-function toggleDropdown(){ document.getElementById("dropdown").classList.toggle("show"); }
-function filterCategory(cat){
-  if (cat === "all") products = [...allProducts];
-  else products = allProducts.filter(p=>p.category === cat);
-  page = 1; render();
-}
-function logout(){ localStorage.removeItem("currentUser"); location.href = "login.html"; }
-
-function deleteProduct(id){
-  if (!confirm("Bạn có chắc chắn muốn xóa sản phẩm này?")) return;
-  let list = JSON.parse(localStorage.getItem("products") || "[]");
-  list = list.filter(p => String(p.id) !== String(id));
-  localStorage.setItem("products", JSON.stringify(list));
-  allProducts = list;
-  products = [...allProducts];
-  render();
-  alert("Đã xóa sản phẩm.");
-}
-
-function loadProducts(){
-  currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
-  document.getElementById("usernameDisplay").textContent = currentUser.fullname || "Khách";
-  document.getElementById("avatar").src = currentUser.avatar || "avatar.jpg";
-
-  allProducts = JSON.parse(localStorage.getItem("products") || "[]");
-
-  // Nếu chưa có sản phẩm, thêm 20 sản phẩm mẫu
-  if(allProducts.length === 0){
-    const sampleProducts = [
-      { id: String(Date.now()+1), name: "SOFA GIƯỜNG CEASAR", category: "Phòng khách", price: 16300000, creator: "admin", image: "https://cdn.hstatic.net/products/200000295856/sofa-bed-_lusf09_3__8a76254ea7bd47cdb1ef460050c2a1cb.jpg" },
-      { id: String(Date.now()+2), name: "Bàn trà gỗ", category: "Phòng khách", price: 1200000, creator: "admin", image: "ban-tra.jpg" },
-      { id: String(Date.now()+3), name: "Tủ kệ TV", category: "Phòng khách", price: 3500000, creator: "admin", image: "tu-tv.jpg" },
-      { id: String(Date.now()+4), name: "Giường ngủ gỗ", category: "Phòng ngủ", price: 7000000, creator: "admin", image: "giuong-ngu.jpg" },
-      { id: String(Date.now()+5), name: "Tủ quần áo", category: "Phòng ngủ", price: 4000000, creator: "admin", image: "tu-quan-ao.jpg" },
-      { id: String(Date.now()+6), name: "Bàn học sinh", category: "Phòng ngủ", price: 1200000, creator: "admin", image: "ban-hoc.jpg" },
-      { id: String(Date.now()+7), name: "Bàn ăn tròn", category: "Phòng bếp", price: 3000000, creator: "admin", image: "ban-an.jpg" },
-      { id: String(Date.now()+8), name: "Ghế ăn", category: "Phòng bếp", price: 800000, creator: "admin", image: "ghe-an.jpg" },
-      { id: String(Date.now()+9), name: "Tủ lạnh mini", category: "Phòng bếp", price: 2500000, creator: "admin", image: "tu-lanh.jpg" },
-      { id: String(Date.now()+10), name: "Bàn làm việc", category: "Văn phòng", price: 2000000, creator: "admin", image: "ban-lam-viec.jpg" },
-      { id: String(Date.now()+11), name: "Ghế văn phòng", category: "Văn phòng", price: 1500000, creator: "admin", image: "ghe-van-phong.jpg" },
-      { id: String(Date.now()+12), name: "Kệ sách", category: "Văn phòng", price: 1800000, creator: "admin", image: "ke-sach.jpg" },
-      { id: String(Date.now()+13), name: "Tranh treo tường", category: "Trang trí", price: 600000, creator: "admin", image: "tranh-treo.jpg" },
-      { id: String(Date.now()+14), name: "Đèn bàn", category: "Trang trí", price: 400000, creator: "admin", image: "den-ban.jpg" },
-      { id: String(Date.now()+15), name: "Thảm trải sàn", category: "Trang trí", price: 900000, creator: "admin", image: "tham.jpg" },
-      { id: String(Date.now()+16), name: "Ghế bành thư giãn", category: "Phòng khách", price: 4500000, creator: "admin", image: "ghe-banh.jpg" },
-      { id: String(Date.now()+17), name: "Bàn console", category: "Phòng khách", price: 2200000, creator: "admin", image: "ban-console.jpg" },
-      { id: String(Date.now()+18), name: "Giường tầng trẻ em", category: "Phòng ngủ", price: 6500000, creator: "admin", image: "giuong-tang.jpg" },
-      { id: String(Date.now()+19), name: "Ghế bar", category: "Phòng bếp", price: 900000, creator: "admin", image: "ghe-bar.jpg" },
-      { id: String(Date.now()+20), name: "Đèn trần hiện đại", category: "Trang trí", price: 1200000, creator: "admin", image: "den-tran.jpg" },
-    ];
-    localStorage.setItem("products", JSON.stringify(sampleProducts));
-    allProducts = [...sampleProducts];
-    alert("Đã thêm 20 sản phẩm mẫu!");
-  }
-
-  allProducts = allProducts.map(p => ({...p, id: String(p.id)}));
-  products = [...allProducts];
-  page = 1;
-  render();
-}
-
-loadProducts();
-</script>
-
-<footer class="footer">
+<!-- ===== FOOTER GIỐNG HÌNH ===== -->
+<footer class="site-footer">
   <div class="footer-container">
+
     <div class="footer-col">
-      <h3>Bắt đầu mua sắm</h3>
-      <a href="#">Đăng ký tài khoản</a>
+      <h4>Bắt đầu mua sắm</h4>
+      <a href="register.html">Đăng ký tài khoản</a>
       <a href="#">Điều khoản bán hàng</a>
     </div>
+
     <div class="footer-col">
-      <h3>Tài khoản</h3>
+      <h4>Tài khoản</h4>
       <a href="login.html">Đăng nhập</a>
       <a href="register.html">Tạo tài khoản</a>
       <a href="#">Danh sách yêu thích</a>
     </div>
+
     <div class="footer-col">
-      <h3>Dịch vụ khách hàng</h3>
+      <h4>Dịch vụ khách hàng</h4>
       <a href="#">Chính sách giao hàng</a>
       <a href="#">Phương thức thanh toán</a>
       <a href="#">Chính sách bảo hành</a>
       <a href="#">Chính sách đổi trả</a>
       <a href="#">Câu hỏi thường gặp</a>
     </div>
+
     <div class="footer-col">
-      <h3>Liên hệ</h3>
+      <h4>Liên hệ</h4>
       <p>📞 0377427739 (Hotline/Zalo)</p>
       <p>✉️ hotro@noithat.vn</p>
     </div>
+
   </div>
+
   <div class="footer-bottom">
-    © 2025 Nội Thất Store — Thiết kế bởi Thành Công
+    © 2025 Nội Thất Store
   </div>
 </footer>
+
+<script>
+let page = 1;
+const perPage = 8;
+let products = [];
+let allProducts = [];
+
+const sampleProducts = [
+  {id:'1',name:'SOFA GIƯỜNG CEASAR',category:'Phòng khách',price:16300000,image:'https://cdn.hstatic.net/products/200000295856/sofa-bed-_lusf09_3__8a76254ea7bd47cdb1ef460050c2a1cb.jpg'},
+  {id:'2',name:'Ghế sofa thư giãn bập bênh Malcom',category:'Phòng khách',price:5000000,image:'https://cdn.hstatic.net/products/200000295856/ghe-sofa-thu-gian-_lutg01_4__cb6fe1284358485e8f9b281d2625ccc4.jpg'},
+  {id:'3',name:'Tủ kệ TV',category:'Phòng khách',price:7500000,image:'https://product.hstatic.net/1000288788/product/o1cn01c9guot1on5hg5rfcf___2218308171749-0-cib_e190a67855104274b1251b5d92b52bc9_master.jpg'},
+  {id:'4',name:'Bàn ăn',category:'Phòng bếp',price:10500000,image:'https://ziatti.vn/web/product/extra/big/202212/b2e32d509103309c41e22b5140644ab9.jpg'},
+  {id:'5',name:'Kệ TV',category:'Phòng khách',price:3200000,image:'https://jysk.vn/media/catalog/product/cache/d95cc4c902c5b3900111a1da906a2990/3/6/3690303-ke-tv-markskel-trang-soi-jysk-5.webp'},
+  {id:'6',name:'Ghế băng',category:'Phòng khách',price:2200000,image:'https://jysk.vn/media/catalog/product/cache/d95cc4c902c5b3900111a1da906a2990/3/6/3690275-ghe-bang-vandsted-xam-jysk-2.jpg'},
+  {id:'7',name:'Đèn sàn',category:'Phòng khách',price:4500000,image:'https://jysk.vn/media/catalog/product/cache/3f678ed5a603f9b9954f4a200c4ee372/4/9/4912359-den-san-dani-mau-tu-nhien-jysk-2.webp'},
+  {id:'7',name:'Đèn bàn',category:'Phòng khách',price:890000,image:'https://jysk.vn/media/catalog/product/cache/d95cc4c902c5b3900111a1da906a2990/4/9/4912627-den-ban-hannibal-nau-jysk-3.webp'},
+  {id:'8',name:'Đèn bàn',category:'Phòng khách',price:1200000,image:'https://jysk.vn/media/catalog/product/cache/d95cc4c902c5b3900111a1da906a2990/4/9/4912601-den-ban-joachim-be-den-jysk-5.webp'},
+  {id:'9',name:'Nến điện',category:'Phòng khách',price:129000,image:'https://jysk.vn/media/catalog/product/cache/d95cc4c902c5b3900111a1da906a2990/6/1/6112294-nen-dien-vile-trang-jysk-1.webp'},
+  {id:'10',name:'Chân nến',category:'Phòng khách',price:90000,image:'https://jysk.vn/media/catalog/product/cache/d95cc4c902c5b3900111a1da906a2990/4/9/4912145-chan-nen-torlek-jysk-1.webp'},
+
+  {id:'11',name:'Giường Ngủ Thiết Kế Bọc Nệm Sang Trọng Regal',category:'Phòng ngủ',price:18200000,image:'https://cdn.hstatic.net/products/1000203256/giuong-ngu-sang-trong-hien-dai_9816181188ea4d2794322d60f8edac1d.jpg'},
+  {id:'12',name:'Giường Ngủ Hiện Đại Bo Cong Chân Gỗ Cloud',category:'Phòng ngủ',price:16500000,image:'https://cdn.hstatic.net/products/1000203256/giuong-ngu-bo-cong-chan-go-cloud_39378a5a862a4e85afeca86bf36d7359_1024x1024.jpg'},
+  {id:'13',name:'Giường Ngủ Thiết Kế Khối Đương Đại Vesta',category:'Phòng ngủ',price:17200000,image:'https://cdn.hstatic.net/products/1000203256/giuong-ngu-duong-dai-vesta_c85f6867d4df4461bcc28c8f1337804f.jpg'},
+  {id:'14',name:'Bàn Xoay Góc Trong Phòng Ngủ Togismart',category:'Phòng ngủ',price:4600000,image:'https://api.togihome.vn/storage/images/originals/01-blpykd4tgy90mye.webp'},
+  {id:'15',name:'Bàn Trang Điểm Gỗ Tự Nhiên Togismart ',category:'Phòng ngủ',price:2100000,image:'https://api.togihome.vn/storage/images/originals/z5577029041674-564c11c20cc9bb852da9f1bbad377c54-0mhjj5urpqbsxa0.webp'},
+  {id:'16',name:'Tủ quần áo cánh lùa tối giản, sang trọng',category:'Phòng ngủ',price:850000,image:'https://api.togihome.vn/storage/images/originals/tu-quan-ao-canh-lua-toi-gian-sang-trong-br116-8-wspdc5pkcmvs0n9.webp'},
+  {id:'17',name:'Kệ Treo Quần Áo Gỗ Tự Nhiên Hiện Đại Haigo',category:'Phòng ngủ',price:9500000,image:'https://api.togihome.vn/storage/images/originals/ke-treo-quan-ao-go-tu-nhien-hien-dai-haigo-kt375-11-igrcjn18q5wmcsg.webp'},
+  {id:'18',name:'Kệ , Tủ, Tab đầu giường thiết kế đa năng',category:'Phòng ngủ',price:1200000,image:'https://api.togihome.vn/storage/images/originals/ke-tu-tab-dau-giuong-thiet-ke-da-nang-tdg-203-4-yfkbqienz76v0vz.webp'},
+  {id:'19',name:'Kệ đầu giường thiết kế nhỏ gọn, tối ưu không gian ',category:'Phòng ngủ',price:950000,image:'https://api.togihome.vn/storage/images/originals/ke-dau-giuong-thiet-ke-nho-gon-toi-uu-khong-gian-br62-5-bxtn3hfdl8fa3qv.webp'},
+  {id:'20',name:'Kệ Gương Soi Toàn Thân TOGI Smart ',category:'Phòng ngủ',price:3980000,image:'https://api.togihome.vn/storage/images/originals/untitled-1-bwwfk1ut5v4u48x.webp'},
+
+  {id:'21',name:'Bàn M (Scorden)',category:'Phòng bếp',price:8800000,image:'https://product.hstatic.net/1000288788/product/743-2c54-44f4-8986-618f8bb65f7a_30c3da21e1cb4b77b753c5ef85bbd4ef_large_d472ac9ebe154c708d62c3480c75add4_master.jpg'},
+  {id:'22',name:'Bộ bàn ăn JEGIND D130 ',category:'Phòng bếp',price:10500000,image:'https://jysk.vn/media/catalog/product/cache/d95cc4c902c5b3900111a1da906a2990/s/0/s000978-bo-ban-an-jegind-kastrup-jysk-2.webp'},
+  {id:'23',name:'Bộ bàn ăn ALSTED',category:'Phòng bếp',price:9950000,image:'https://jysk.vn/media/catalog/product/cache/d95cc4c902c5b3900111a1da906a2990/s/3/s367272-bo-ban-an-alsted-thorup-jysk-2.webp'},
+  {id:'24',name:'Tủ phòng ăn',category:'Phòng bếp',price:6500000,image:'https://jysk.vn/media/catalog/product/cache/d95cc4c902c5b3900111a1da906a2990/3/6/3670345-tu-phong-an-lintrup-go-cong-nghiep-jysk-1.jpg'},
+  {id:'25',name:'Tủ',category:'Phòng bếp',price:4400000,image:'https://jysk.vn/media/catalog/product/cache/d95cc4c902c5b3900111a1da906a2990/3/6/3670231-tu-phong-an-gamtofte-go-cong-nghiep-jysk.webp'},
+  {id:'26',name:'Tủ ly',category:'Phòng bếp',price:8000000,image:'https://jysk.vn/media/catalog/product/cache/3f678ed5a603f9b9954f4a200c4ee372/3/6/3640231-tu-ly-lyngvig-mau-soi-jysk-1.webp'},
+  {id:'27',name:'Tủ ly',category:'Phòng bếp',price:15000000,image:'https://jysk.vn/media/catalog/product/cache/d95cc4c902c5b3900111a1da906a2990/3/6/3699013-tu-ly-markskel-trang-soi-jysk-1.webp'},
+  {id:'28',name:'Tủ bếp hiện đại gỗ công nghiệp LG',category:'Phòng bếp',price:6000000,image:'https://dogolegia.vn/wp-content/uploads/2024/03/Mau-tu-bep-dep-hien-dai-go-cong-nghiep-LG-TB115.jpg'},
+  {id:'29',name:'Thiết kế tủ bếp hiện đại gỗ công nghiệp',category:'Phòng bếp',price:900000,image:'https://dogolegia.vn/wp-content/uploads/2025/02/Mau-tu-bep-dep-hien-dai-go-cong-nghiep-LG-TB128.jpg'},
+  {id:'30',name:'Máy hút mùi gắn tường',category:'Phòng bếp',price:23000000,image:'https://hafelehome.com.vn/cdn/shop/products/533.80.203_ppic_457x431_crop_center.jpg?v=1585854553'},
+
+  {id:'31',name:'Bàn làm việc',category:'Văn phòng',price:2400000,image:'https://jysk.vn/media/catalog/product/cache/d95cc4c902c5b3900111a1da906a2990/3/6/3650044-ban-lam-viec-astrup-den-jysk-2.webp'},
+  {id:'32',name:'Ghế lưới Chân Xoay',category:'Văn phòng',price:900000,image:'https://st.meta.vn/Data/image/2021/11/24/ghe-luoi-hoa-phat-chan-xoay-gl119-1.jpg'},
+  {id:'33',name:'Hộc tủ di động',category:'Văn phòng',price:1000000,image:'https://st.meta.vn/Data/image/2021/11/15/Hoc-tu-di-dong-SM1830FH-1.jpg'},
+  {id:'34',name:'Tủ gỗ cánh lùa',category:'Văn phòng',price:1300000,image:'https://st.meta.vn/Data/image/2021/12/08/tu-go-canh-lua-tgl02-g.jpg'},
+  {id:'35',name:'Ghế gấp',category:'Văn phòng',price:400000,image:'https://st.meta.vn/Data/image/product_images/2013/Noithat/07/02/GG01-M1.jpg'},
+  {id:'36',name:'Hộc di động 3 ngăn',category:'Văn phòng',price:900000,image:'https://st.meta.vn/Data/image/2022/02/17/hoc-di-dong-3-ngan-hoa-phat-atm3d-g.jpg'},
+  {id:'37',name:'Ghế công thái học',category:'Văn phòng',price:140000,image:'https://st.meta.vn/Data/image/2024/11/22/ghe-cong-thai-hoc-ergonomic-warrio-pawn-series-wec106-black-9.jpg'},
+  {id:'38',name:'Bàn làm việc chân sắt',category:'Văn phòng',price:150000,image:'https://st.meta.vn/img/thumb.ashx/300x300x95/Data/image/2021/12/01/nhan-ban-tu-ban-bco12-3.jpg'},
+  {id:'39',name:'Tủ lãnh đạo phong cách Italia ',category:'Văn phòng',price:15000000,image:'https://st.meta.vn/img/thumb.ashx/300x300x95/Data/image/2021/12/08/tu-lanh-dao-lufa-fami-e02-c3200l-300.jpg'},
+  {id:'40',name:'Bộ bàn giám đốc sang trọng phong cách Italia',category:'Văn phòng',price:14000000,image:'https://st.meta.vn/Data/image/2022/01/12/bo-ban-giam-doc-fami-lufa-e02-d3223l-r-b.jpg'},
+
+  {id:'41',name:'Tranh Ngựa Vintage Tông Nâu',category:'Trang trí',price:600000,image:'https://cdn.hstatic.net/products/1000203256/4_0d98fd5f85a54a4e93c4821d468a81e0_1024x1024.png'},
+  {id:'42',name:'Tranh Treo Tường Phong Cách Chim Én Vintage',category:'Trang trí',price:400000,image:'https://cdn.hstatic.net/products/1000203256/2_d20c15fac9184f60b6c8913f52a9501a_1024x1024.png'},
+  {id:'43',name:'Tranh Treo Tường Khung Gỗ Vintage Abstract Birds Crane',category:'Trang trí',price:200000,image:'https://cdn.hstatic.net/products/1000203256/49_a51c548acae1420591e28d6866646e18_1024x1024.jpg'},
+  {id:'44',name:'Đèn Bàn Hình Vầng Trăng Phản Quang Halo Bowl Độc Đáo',category:'Trang trí',price:3500000,image:'https://cdn.hstatic.net/products/1000203256/o1cn01xmexhm20n3aakxk6b___2210171316893-0-cib_2e2b43b20ac54f76912ac5b791acc099_1024x1024.jpg'},
+  {id:'45',name:'Đèn Bàn Phong Cách Mạ Điện Chrome Bạc Hình Cung Tròn',category:'Trang trí',price:1200000,image:'https://cdn.hstatic.net/products/1000203256/dsc05857_copy_2_ad2d6e1e0365405b933e057360329d75_1024x1024.jpg'},
+  {id:'46',name:'Tủ Phụ Console Trang Trí Sảnh Cửa Ra Vào Phối Sọc Hình Học',category:'Trang trí',price:9890000,image:'https://cdn.hstatic.net/products/1000203256/tu-console-go-khung-sat-ben-dep_53c8c9f78cbe4b6aa91f2159813c551c_1024x1024.jpg'},
+  {id:'47',name:'Tủ Console Gỗ 6 Ngăn Kéo Dresty',category:'Trang trí',price:780000,image:'https://cdn.hstatic.net/products/1000203256/tu-console-go-6-ngan-keo-tinh-te_a30a260243594b79b09bb2276e7ee828_1024x1024.jpg'},
+  {id:'48',name:'Tủ Console Trang Trí 6 Ngăn Kéo Meridian',category:'Trang trí',price:12000000,image:'https://cdn.hstatic.net/products/1000203256/tu-console-trang-tri-phong-khach-meridian_1eaf7f60c2f44fdda68adb9d04576af1_1024x1024.jpg'},
+  {id:'49',name:'Đôn Ngồi Hình Bánh Vuông Mug',category:'Trang trí',price:1500000,image:'https://cdn.hstatic.net/products/1000203256/dsc03819_0b21e94a58804f57a7a086e22757402d_1024x1024.jpg'},
+  {id:'50',name:'Võng Canvas Tua Rua Trang Trí Võng Đơn',category:'Trang trí',price:4850000,image:'https://product.hstatic.net/1000203256/product/vong-canvas-tua-rua-trang-tri-vong-don-200x100cm__1__018e6c1b10554624a94313d54d68aba0_1024x1024.jpg'},
+
+  {id:'51',name:'Ghế Sofa Da Onyx Hiện Đại Tối Giản',category:'Phòng khách',price:10000000,image:'https://cdn.hstatic.net/products/1000203256/sofa-da-pu-cao-cap-onyx_80db2e4fcbf7441f8dae373f05cdbc90_1024x1024.jpg'},
+  {id:'52',name:'Tủ Tivi Hiện Đại Màu Kem Bóng Chân Gỗ',category:'Phòng khách',price:8500000,image:'https://cdn.hstatic.net/products/1000203256/tu-tivi-hien-dai-mau-kem-bong-luna-cream_6fdfe04d17d643369fd8c15532606c0a_1024x1024.jpg'},
+  {id:'53',name:'Thảm Trải Sàn Chống Thẩm',category:'Phòng khách',price:4000000,image:'https://product.hstatic.net/1000203256/product/o1cn01vkqvip1tft8so11z3___2214120405873-0-cib_4284d75929014adda4205e0b76d04cc8_1024x1024.jpg'},
+  {id:'54',name:'Tủ Rượu Decor Hightboard Oak - Màu Đen',category:'Phòng khách',price:9000000,image:'https://product.hstatic.net/1000203256/product/plmindis_1_75dd9e97d3b84d31bd720e847023d699_1024x1024.jpg'},
+  {id:'55',name:'Đồng Hồ Gỗ Treo Tường Solid Wood Có Kim Giây',category:'Phòng khách',price:500000,image:'https://product.hstatic.net/1000203256/product/dsc08810_1152c465bf7943318bf2d523dcc2c1cf_1024x1024.jpg'},
+
+  {id:'56',name:'Giường Ngủ Bọc Nệm Đầu Giường Hình Tam Giác',category:'Phòng ngủ',price:10000000,image:'https://cdn.hstatic.net/products/1000203256/a__7__d70872b8679c4322b20ee7f483f745f9_1024x1024.png'},
+  {id:'57',name:'Thảm Chân Giường Dệt Nổi Maillard Tông Nâu',category:'Phòng ngủ',price:400000,image:'https://product.hstatic.net/1000203256/product/dsc09846_ae7f14af601b41c6b014a39f66895eae_1024x1024.jpg'},
+  {id:'58',name:'Hệ Tủ Quần Áo Cao Trần Hiện Đại',category:'Phòng ngủ',price:40000000,image:'https://cdn.hstatic.net/products/1000203256/tu-quan-ao-hien-dai-gia-cong-theo-yeu-cau_6b3b3067706e418584ab9e2759166d4c_1024x1024.png'},
+  {id:'59',name:'Tủ Kệ Trang Trí',category:'Phòng ngủ',price:650000,image:'https://product.hstatic.net/1000203256/product/ddfc434833_001319533303000______ga03_8cf9d01a42874cb0a86d6b1735a91988_1024x1024.jpg'},
+  {id:'60',name:'Ghế Armchair Gợn Sóng Tạo Dáng chữ S Độc Đáo',category:'Phòng ngủ',price:11000000,image:'https://product.hstatic.net/1000203256/product/p1410484_a7f6eb6ea35f4d6f824352bcabbda99e_1024x1024.jpg'},
+
+]
+
+allProducts = sampleProducts;
+products = [...allProducts]; // ✅ gán dữ liệu để hiển thị sản phẩm
+function render(){
+  const start=(page-1)*perPage;
+  const list=products.slice(start,start+perPage);
+  document.getElementById('count').innerText=`Tổng số: ${products.length} sản phẩm`;
+  document.getElementById('productList').innerHTML=list.map(p=>`
+    <div class="product-card">
+      <img src="${p.image}">
+      <h3>${p.name}</h3>
+      <p>${p.category}</p>
+      <b>${p.price.toLocaleString('vi-VN')} đ</b>
+    </div>`).join('');
+  document.getElementById('pageInfo').innerText=`Trang ${page}/${Math.ceil(products.length/perPage)}`;
+}
+function filterCategory(c){
+  products = c==='all' ? [...allProducts] : allProducts.filter(p=>p.category===c);
+  page=1;
+  render();
+}
+function nextPage(){if(page*perPage<products.length){page++;render();}}
+function prevPage(){if(page>1){page--;render();}}
+function toggleDropdown(){document.getElementById('dropdown').classList.toggle('show');}
+function logout(){alert('Đã đăng xuất (demo)');}
+
+// ✅ Ẩn dropdown khi click ngoài
+window.onclick = function(event) {
+  if (!event.target.closest('.nav-user')) {
+    document.getElementById('dropdown').classList.remove('show');
+  }
+}
+
+render();
+</script>
+
 </body>
 </html>
