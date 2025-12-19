@@ -3,37 +3,105 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Đăng nhập</title>
-  <link rel="stylesheet" href="style.css" />
+  <title>Đăng nhập - Đồ Nội Thất Store</title>
+  <style>
+    :root { --muted:#666; }
+
+    body {
+      margin:0;
+      font-family: Inter, Arial, sans-serif;
+      background:#fff7ec;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      height:100vh;
+    }
+
+    .login-box {
+      background:#fff;
+      padding:24px;
+      border-radius:12px;
+      box-shadow:0 10px 30px rgba(0,0,0,.1);
+      width:100%;
+      max-width:340px;
+      text-align:center;
+    }
+
+    .login-box h1 {
+      font-size:22px;
+      margin-bottom:8px;
+    }
+
+    .login-box h2 {
+      font-size:18px;
+      margin-bottom:16px;
+      color:#333;
+    }
+
+    .login-form input {
+      width:100%;
+      padding:10px;
+      margin-bottom:12px;
+      border:1px solid #ccc;
+      border-radius:8px;
+      font-size:14px;
+    }
+
+    .btn {
+      width:100%;
+      padding:10px;
+      margin-bottom:8px;
+      border:none;
+      border-radius:8px;
+      background:#ff7a00;
+      color:#fff;
+      font-weight:bold;
+      cursor:pointer;
+      transition:opacity .3s;
+    }
+
+    .btn:hover { opacity:.9; }
+
+    .btn.ghost {
+      background:#fff;
+      border:2px solid #111;
+      color:#111;
+    }
+
+    .small-muted {
+      font-size:12px;
+      color:var(--muted);
+      margin-top:6px;
+    }
+  </style>
 </head>
 <body>
-  <div class="login-container">
-    <div class="login-box">
-     <h1 class="title">🛋️ Đồ Nội Thất Store</h1>
-      <div class="login-header"><h1>Đăng nhập</h1></div>
-      <div class="login-form">
-        <div class="form-group"><label>Tên đăng nhập</label><input id="username" autocomplete="username" /></div>
-        <div class="form-group"><label>Mật khẩu</label><input id="password" type="password" autocomplete="current-password" /></div>
-        <div style="display:flex;gap:10px;margin-top:12px;">
-          <button id="loginBtn" class="btn">Đăng nhập</button>
-          <button class="btn ghost" onclick="location.href='register.html'">Đăng ký</button>
-        </div>
-        <p style="margin-top:12px;color:var(--muted)">Đăng nhập để quản lý sản phẩm của bạn.</p>
-      </div>
-    </div>
+  <div class="login-box">
+    <h1>🛋️ Đồ Nội Thất Store</h1>
+    <h2>Đăng nhập</h2>
+    <form class="login-form">
+      <input id="username" type="text" placeholder="Tên đăng nhập" autocomplete="username" required />
+      <input id="password" type="password" placeholder="Mật khẩu" autocomplete="current-password" required />
+      <button id="loginBtn" type="button" class="btn">Đăng nhập</button>
+      <button type="button" class="btn ghost" onclick="location.href='register.html'">Đăng ký</button>
+      <p class="small-muted">Đăng nhập để quản lý sản phẩm của bạn.</p>
+    </form>
   </div>
 
   <script>
     async function fallbackLocalLogin(username, password){
       const users = JSON.parse(localStorage.getItem("users") || "[]");
-      const user = users.find(u => u.username === username && u.password === password);
-      return user || null;
+      return users.find(u => u.username === username && u.password === password) || null;
     }
 
     document.getElementById("loginBtn").addEventListener("click", async () => {
       const username = document.getElementById("username").value.trim();
       const password = document.getElementById("password").value.trim();
-      if (!username || !password) return alert("Nhập đầy đủ thông tin!");
+
+      if (!username || !password) {
+        alert("Vui lòng nhập đầy đủ thông tin!");
+        return;
+      }
 
       try {
         const res = await fetch('/api/login', {
@@ -41,13 +109,16 @@
           headers: {'Content-Type':'application/json'},
           body: JSON.stringify({ username, password })
         });
+
         if (res.ok) {
           const user = await res.json();
           localStorage.setItem("currentUser", JSON.stringify(user));
           location.href = "index.html";
           return;
         }
-      } catch(e){}
+      } catch (e) {
+        console.error("Lỗi API:", e);
+      }
 
       const user = await fallbackLocalLogin(username, password);
       if (user) {
@@ -59,10 +130,8 @@
     });
 
     (function checkLogin(){
-      if (localStorage.getItem("currentUser")) {
-        const u = JSON.parse(localStorage.getItem("currentUser"));
-        if (u && u.username) location.href = "index.html";
-      }
+      const u = JSON.parse(localStorage.getItem("currentUser") || "null");
+      if (u && u.username) location.href = "index.html";
     })();
   </script>
 </body>

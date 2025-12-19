@@ -5,6 +5,55 @@
   <title>➕ Thêm / Chỉnh sửa sản phẩm</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
+  <style>
+    .form-card {
+      background: #fff;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,.06);
+      max-width: 600px;
+      margin: 20px auto;
+    }
+
+    .form-card label {
+      display: block;
+      margin-bottom: 14px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .form-card input,
+    .form-card select,
+    .form-card textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: border-color 0.3s ease;
+    }
+
+    .form-card input:focus,
+    .form-card textarea:focus {
+      border-color: #ff7a00;
+      outline: none;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-bottom: 20px;
+      text-decoration: none;
+      color: #ff7a00;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
 <div class="container">
@@ -13,7 +62,7 @@
 
   <div class="form-card">
     <label>Tên sản phẩm
-      <input id="name" type="text" placeholder="Ví dụ: Ghế sofa 2 chỗ">
+      <input id="name" type="text" placeholder="Ví dụ: Ghế sofa 2 chỗ" required>
     </label>
 
     <label>Danh mục
@@ -21,25 +70,24 @@
         <option value="Phòng khách">Phòng khách</option>
         <option value="Phòng ngủ">Phòng ngủ</option>
         <option value="Phòng bếp">Phòng bếp</option>
-        <option value="Phòng tắm">Phòng tắm</option>
         <option value="Văn phòng">Văn phòng</option>
         <option value="Trang trí">Trang trí</option>
       </select>
     </label>
 
     <label>Giá (VNĐ)
-      <input id="price" type="number" placeholder="Ví dụ: 2500000">
+      <input id="price" type="number" min="0" placeholder="Ví dụ: 2500000" required>
     </label>
 
     <label>Link hình ảnh
-      <input id="image" type="text" placeholder="URL hình ảnh">
+      <input id="image" type="url" placeholder="URL hình ảnh">
     </label>
 
     <label>Mô tả
       <textarea id="desc" rows="6" placeholder="Mô tả chi tiết sản phẩm..."></textarea>
     </label>
 
-    <div class="form-actions" style="margin-top:10px;">
+    <div class="form-actions">
       <button class="btn ghost" onclick="location.href='index.html'">Hủy</button>
       <button class="btn" onclick="saveProduct()">Lưu sản phẩm</button>
     </div>
@@ -50,12 +98,16 @@
 const id = new URLSearchParams(location.search).get("id");
 let products = JSON.parse(localStorage.getItem("products") || "[]");
 let currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
-if(!currentUser.username){ alert("Bạn phải đăng nhập!"); location.href="login.html"; }
 
-function loadEdit(){
-  if(!id) return;
-  const p = products.find(x=>x.id===id);
-  if(!p) return;
+if (!currentUser.username) {
+  alert("Bạn phải đăng nhập!");
+  location.href = "login.html";
+}
+
+function loadEdit() {
+  if (!id) return;
+  const p = products.find(x => x.id === id);
+  if (!p) return;
   document.getElementById("name").value = p.name;
   document.getElementById("category").value = p.category;
   document.getElementById("price").value = p.price;
@@ -64,24 +116,35 @@ function loadEdit(){
 }
 loadEdit();
 
-function saveProduct(){
+function saveProduct() {
   const name = document.getElementById("name").value.trim();
   const category = document.getElementById("category").value;
   const price = document.getElementById("price").value.trim();
   const image = document.getElementById("image").value.trim();
   const desc = document.getElementById("desc").value.trim();
-  if(!name) return alert("Tên sản phẩm không được để trống!");
 
-  if(id){
-    const index = products.findIndex(p=>p.id===id);
-    products[index] = {...products[index], name, category, price, image, desc};
+  if (!name) return alert("Tên sản phẩm không được để trống!");
+  if (!price || isNaN(price) || Number(price) < 0) return alert("Giá sản phẩm không hợp lệ!");
+
+  if (id) {
+    const index = products.findIndex(p => p.id === id);
+    products[index] = { ...products[index], name, category, price, image, desc };
   } else {
-    const newProduct = {id:"p"+(products.length+1), name, category, price, image, desc, creator:currentUser.username};
+    const newProduct = {
+      id: "p" + Date.now(),
+      name,
+      category,
+      price,
+      image,
+      desc,
+      creator: currentUser.username
+    };
     products.push(newProduct);
   }
+
   localStorage.setItem("products", JSON.stringify(products));
   alert("Lưu thành công!");
-  location.href="index.html";
+  location.href = "index.html";
 }
 </script>
 </body>

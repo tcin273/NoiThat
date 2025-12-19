@@ -209,6 +209,45 @@ window.onclick = function(event) {
 
 render();
 </script>
+<script>
+// --- KIỂM TRA NGƯỜI DÙNG ĐĂNG NHẬP ---
+let currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
+
+// Nếu chưa login, vẫn hiển thị "Khách"
+// Nếu muốn bắt buộc login, thêm dòng sau:
+// if(!currentUser){ location.href="login.html"; }
+
+function updateUserDisplay(){
+  const usernameDisplay = document.getElementById("usernameDisplay");
+  const dropdown = document.getElementById("dropdown");
+  if(currentUser && currentUser.username){
+    usernameDisplay.innerText = currentUser.username;
+    dropdown.innerHTML = `
+      <a href="#" onclick="logout();return false;">🚪 Đăng xuất</a>
+      <a href="add-do.html">➕ Thêm đồ</a>
+    `;
+  } else {
+    usernameDisplay.innerText = "Khách";
+    dropdown.innerHTML = `
+      <a href="login.html">🔑 Đăng nhập</a>
+      <a href="register.html">📝 Tạo tài khoản</a>
+    `;
+  }
+}
+
+// Đăng xuất
+function logout(){
+  localStorage.removeItem("currentUser");
+  currentUser = null;
+  updateUserDisplay();
+  alert("Đã đăng xuất!");
+  // Nếu muốn redirect về login: location.href="login.html";
+}
+
+// Gọi lần đầu
+updateUserDisplay();
+</script>
+
 
 </body>
 </html>
